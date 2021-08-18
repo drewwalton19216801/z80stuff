@@ -1,0 +1,6 @@
+;P2.1-JP0.z80
+
+org 0           ; run at address $0000
+
+loop:           ; Label - an address referenced elsewhere in the code
+    jp loop     ; Actual z80 code - jump to 'loop'

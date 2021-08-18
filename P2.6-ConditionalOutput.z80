@@ -1,0 +1,16 @@
+; P2.6-ConditionalOutput.z80
+
+org 0
+
+    ld a,0      ; zero the A register
+
+loop:
+    xor 1       ; toggle bit 0 of A register
+    jr z,zero   ; just to 'zero' if the z (zero) flag is set
+
+    out (42),a
+    jr loop
+
+zero:
+    out (84),a
+    jr loop
