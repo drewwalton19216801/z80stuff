@@ -10,7 +10,9 @@
 #define A9 35
 #define A10 33
 
-#define SIG 31
+#define IOREQ 31
+#define WR 30
+#define RD 29
 
 struct AddressBus {
   String a0;
@@ -26,11 +28,19 @@ struct AddressBus {
   String a10;
 };
 
-int sign = 1;
+struct Signals {
+  int iosig = 1;
+  int rdsig = 1;
+  int wrsig = 1;
+};
 
 struct AddressBus bus;
-String prevAddr;
-String Addr;
+String prevIOAddr;
+String prevRDAddr;
+String prevWRAddr;
+String IOAddr;
+String RDAddr;
+String WRAddr;
 
 void setup() {
   // put your setup code here, to run once:
@@ -46,30 +56,59 @@ void setup() {
   pinMode(A8, INPUT);
   pinMode(A9, INPUT);
   pinMode(A10, INPUT);
-  pinMode(SIG, INPUT);
+  pinMode(IOREQ, INPUT);
+  pinMode(WR, INPUT);
+  pinMode(RD, INPUT);
+}
+
+void readAddressBus() {
+  bus.a0 = String(digitalRead(A0));
+  bus.a1 = String(digitalRead(A1));
+  bus.a2 = String(digitalRead(A2));
+  bus.a3 = String(digitalRead(A3));
+  bus.a4 = String(digitalRead(A4));
+  bus.a5 = String(digitalRead(A5));
+  bus.a6 = String(digitalRead(A6));
+  bus.a7 = String(digitalRead(A7));
+  bus.a8 = String(digitalRead(A8));
+  bus.a9 = String(digitalRead(A9));
+  bus.a10 = String(digitalRead(A10));
+}
+
+Signals readSignalType() {
+  struct Signals sig;
+  sig.iosig = digitalRead(IOREQ);
+  sig.rdsig = digitalRead(RD);
+  sig.wrsig = digitalRead(WR);
+  return sig;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  sign = digitalRead(SIG);
-  if (sign == 0) {
-    bus.a0 = String(digitalRead(A0));
-    bus.a1 = String(digitalRead(A1));
-    bus.a2 = String(digitalRead(A2));
-    bus.a3 = String(digitalRead(A3));
-    bus.a4 = String(digitalRead(A4));
-    bus.a5 = String(digitalRead(A5));
-    bus.a6 = String(digitalRead(A6));
-    bus.a7 = String(digitalRead(A7));
-    bus.a8 = String(digitalRead(A8));
-    bus.a9 = String(digitalRead(A9));
-    bus.a10 = String(digitalRead(A10));
-    Addr = String(bus.a10 + bus.a9 + bus.a8 + bus.a7 + bus.a6 + bus.a5 + bus.a4 + bus.a3 + bus.a2 + bus.a1 + bus.a0);
-    if (Addr.equals(prevAddr) == false) {
-      prevAddr = Addr;
-      Serial.print(Addr);
-      Serial.println("");
-      delay(300);
+  //Serial.print("\r");
+  struct Signals s;
+  s = readSignalType();
+  readAddressBus();
+  if (s.iosig == 0) {
+    IOAddr = String(bus.a10 + bus.a9 + bus.a8 + bus.a7 + bus.a6 + bus.a5 + bus.a4 + bus.a3 + bus.a2 + bus.a1 + bus.a0);
+    if (IOAddr.equals(prevIOAddr) == false) {
+      prevIOAddr = IOAddr;
+      Serial.println(" IOREQ: " + IOAddr + " ");
     }
   }
+  if (s.rdsig == 0) {
+    RDAddr = String(bus.a10 + bus.a9 + bus.a8 + bus.a7 + bus.a6 + bus.a5 + bus.a4 + bus.a3 + bus.a2 + bus.a1 + bus.a0);
+    if (RDAddr.equals(prevRDAddr) == false) {
+      prevRDAddr = RDAddr;
+      Serial.println(" RD: " + RDAddr + " ");
+    }
+  }
+  if (s.wrsig == 0) {
+    WRAddr = String(bus.a10 + bus.a9 + bus.a8 + bus.a7 + bus.a6 + bus.a5 + bus.a4 + bus.a3 + bus.a2 + bus.a1 + bus.a0);
+    if (WRAddr.equals(prevWRAddr) == false) {
+      prevWRAddr = WRAddr;
+      Serial.println(" WR: " + WRAddr + " ");
+    }
+  }
+  delay(25);
 }
